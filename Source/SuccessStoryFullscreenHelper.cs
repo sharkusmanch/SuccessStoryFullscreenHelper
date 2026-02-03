@@ -161,7 +161,7 @@ namespace SuccessStoryFullscreenHelper
         public override void OnApplicationStarted(OnApplicationStartedEventArgs args)
         {
             base.OnApplicationStarted(args);
-            CountAchievements();
+            Task.Run(() => CountAchievements());
         }
 
         private void CountAchievements()
@@ -278,7 +278,9 @@ namespace SuccessStoryFullscreenHelper
                             if (item["DateUnlocked"] != null &&
                                 !item["DateUnlocked"].ToString().StartsWith("0001-01-01"))
                             {
-                                double score = (double)item["GamerScore"];
+                                double score = 0;
+                                try { score = (double)item["GamerScore"]; }
+                                catch { }
 
                                 // Speciální pravidla pro RetroAchievements
                                 if (retroPlatforms.Contains(platformName))
@@ -470,20 +472,23 @@ namespace SuccessStoryFullscreenHelper
 
 
 
-            settings.Settings.GS15 = gs15.ToString();
-            settings.Settings.GS30 = gs30.ToString();
-            settings.Settings.GS90 = gs90.ToString();
-            settings.Settings.GSTotal = total.ToString();
-            settings.Settings.GSScore = combinedScore.ToString("N0");
-            settings.Settings.GSLevel = level.ToString();
-            settings.Settings.GSLevelProgress = progress.ToString();
-            settings.Settings.GSPlat = gsPlat.ToString();
-            settings.Settings.GSRank = rank.ToString();
-            settings.Settings.PlatinumGames = platinumGamesList;
-            settings.Settings.PlatinumGamesAscending = platinumGamesListAscending;
-            settings.Settings.AllGamesWithAchievements = allGamesWithAchievements
-            .OrderByDescending(g => g.LastUnlockDate)
-            .ToList();
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                settings.Settings.GS15 = gs15.ToString();
+                settings.Settings.GS30 = gs30.ToString();
+                settings.Settings.GS90 = gs90.ToString();
+                settings.Settings.GSTotal = total.ToString();
+                settings.Settings.GSScore = combinedScore.ToString("N0");
+                settings.Settings.GSLevel = level.ToString();
+                settings.Settings.GSLevelProgress = progress.ToString();
+                settings.Settings.GSPlat = gsPlat.ToString();
+                settings.Settings.GSRank = rank.ToString();
+                settings.Settings.PlatinumGames = platinumGamesList;
+                settings.Settings.PlatinumGamesAscending = platinumGamesListAscending;
+                settings.Settings.AllGamesWithAchievements = allGamesWithAchievements
+                    .OrderByDescending(g => g.LastUnlockDate)
+                    .ToList();
+            });
 
             logger.Info($"SuccessStory stats loaded from {fileCount} files. Bronze: {gs15}, Silver: {gs30}, Gold: {gs90}, Platinum: {gsPlat}, Total: {total}");
             
